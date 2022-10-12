@@ -4,7 +4,7 @@ import requests
 from slugify import slugify
 from pprint import pprint
 
-from decouple import config
+
 
 class Aws():
 
@@ -15,8 +15,8 @@ class Aws():
     def create_ecr(self, name) -> str:
         stackname = slugify('a'+name.lower() + '-ecr-stack')
         cf_template = open('src\iac\ecr.yml').read()
-        client = boto3.client('cloudformation', region_name=config('AWS_DEFAULT_REGION'),aws_access_key_id=config('AWS_ACCESS_KEY_ID'),
-         aws_secret_access_key= config('AWS_SECRET_ACCESS_KEY'))
+        client = boto3.client('cloudformation', region_name=os.getenv('AWS_DEFAULT_REGION'),aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
+         aws_secret_access_key= os.getenv('AWS_SECRET_ACCESS_KEY'))
 
         try:
             client.create_stack(
@@ -46,14 +46,14 @@ class Aws():
                 raise Exception(stackname+' failed during creation')
 
     def test(self) -> list:
-        client = boto3.client('s3', region_name=config('AWS_DEFAULT_REGION'),aws_access_key_id=config('AWS_ACCESS_KEY_ID'),
-         aws_secret_access_key= config('AWS_SECRET_ACCESS_KEY'))
+        client = boto3.client('s3', region_name=os.getenv('AWS_DEFAULT_REGION'),aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
+         aws_secret_access_key= os.getenv('AWS_SECRET_ACCESS_KEY'))
         response = client.list_buckets()
         return response
 
     def __get_stack_status(self, stackname):
-        client = boto3.client('cloudformation', region_name=config('AWS_DEFAULT_REGION'),aws_access_key_id=config('AWS_ACCESS_KEY_ID'),
-         aws_secret_access_key= config('AWS_SECRET_ACCESS_KEY'))
+        client = boto3.client('cloudformation', region_name=os.getenv('AWS_DEFAULT_REGION'),aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
+         aws_secret_access_key= os.getenv('AWS_SECRET_ACCESS_KEY'))
         r = client.describe_stacks(StackName=stackname)
     
         for stack in r['Stacks']:

@@ -5,13 +5,12 @@ import requests
 from pprint import pp, pprint
 import docker
 
-from decouple import config
 
 
 class Gitlab:
 
-    req_headers = {'PRIVATE-TOKEN': config('GITLAB_PERSONAL_TOKEN')}
-    req_url = config('GITLAB_HOST')+config('GITLAB_URL_PREFIX')
+    req_headers = {'PRIVATE-TOKEN': os.getenv('GITLAB_PERSONAL_TOKEN')}
+    req_url = os.getenv('GITLAB_HOST')+os.getenv('GITLAB_URL_PREFIX')
 
     def __init__(self, logger) -> None:
         self._logger = logger

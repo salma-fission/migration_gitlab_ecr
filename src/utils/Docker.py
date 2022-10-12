@@ -4,7 +4,7 @@ from pprint import pprint
 from re import sub
 import docker
 import boto3
-from decouple import config
+
 
 class Docker:
     
@@ -13,8 +13,8 @@ class Docker:
     
     def login_gitlab(self):
         client = docker.from_env()
-        r = client.login(username=config('GITLAB_USERNAME'), password=config('GITLAB_PERSONAL_TOKEN'),
-                       registry=config('GITLAB_HOST'))
+        r = client.login(username=os.getenv('GITLAB_USERNAME'), password=os.getenv('GITLAB_PERSONAL_TOKEN'),
+                       registry=os.getenv('GITLAB_HOST'))
 
         self._logger.info(r)
 
@@ -22,8 +22,8 @@ class Docker:
 
     def login_ecr(self):
         client = docker.from_env()
-        ecr = boto3.client('ecr', region_name=config('AWS_DEFAULT_REGION'),aws_access_key_id=config('AWS_ACCESS_KEY_ID'),
-         aws_secret_access_key= config('AWS_SECRET_ACCESS_KEY'))
+        ecr = boto3.client('ecr', region_name=os.getenv('AWS_DEFAULT_REGION'),aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
+         aws_secret_access_key= os.getenv('AWS_SECRET_ACCESS_KEY'))
         token = ecr.get_authorization_token()
         username, password = base64.b64decode(token['authorizationData'][0]['authorizationToken']).decode().split(':')
         registry = token['authorizationData'][0]['proxyEndpoint']
@@ -38,8 +38,8 @@ class Docker:
         tag = gitlab_image['name']
         digestFromGitlab = gitlab_image['digest_from_gitlab']
 
-        ecr = boto3.client('ecr', region_name=config('AWS_DEFAULT_REGION'),aws_access_key_id=config('AWS_ACCESS_KEY_ID'),
-         aws_secret_access_key= config('AWS_SECRET_ACCESS_KEY'))
+        ecr = boto3.client('ecr', region_name=os.getenv('AWS_DEFAULT_REGION'),aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
+         aws_secret_access_key= os.getenv('AWS_SECRET_ACCESS_KEY'))
 
         # Check if image is already in ECR
         r = ecr.batch_get_image(repositoryName=repoName, imageIds=[{'imageTag': tag}])
@@ -53,7 +53,7 @@ class Docker:
                 return # Bye
 
         # Login to Gitlab
-        cmd = 'docker login '+config('GITLAB_DOCKER_HOST')+' -u '+config('GITLAB_USERNAME')+' -p '+config('GITLAB_PERSONAL_TOKEN')
+        cmd = 'docker login '+os.getenv('GITLAB_DOCKER_HOST')+' -u '+os.getenv('GITLAB_USERNAME')+' -p '+os.getenv('GITLAB_PERSONAL_TOKEN')
         self.__run_command(cmd)
 
         # Pull image from Gitlab
@@ -69,7 +69,7 @@ class Docker:
         self.__run_command(cmd)
         
         # Login to AWS ECR
-        cmd = 'aws ecr get-login-password --region '+config('AWS_DEFAULT_REGION')+' | docker login --username AWS --password-stdin '+ecr_uri
+        cmd = 'aws ecr get-login-password --region '+os.getenv('AWS_DEFAULT_REGION')+' | docker login --username AWS --password-stdin '+ecr_uri
         self.__run_command(cmd)
 
         # Push image to AWS ECR
