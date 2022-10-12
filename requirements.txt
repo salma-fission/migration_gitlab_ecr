@@ -1,0 +1,12 @@
+awscli
+botocore
+boto3
+colorama
+requests
+docutils
+jmespath
+python-dateutil
+urllib3
+pycurl
+docker
+python-slugify

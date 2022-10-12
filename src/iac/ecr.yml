@@ -1,0 +1,44 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "ECR Repository"
+
+Parameters:
+  repoName:
+    Type: String
+
+Resources:
+  ECR:
+    Type: AWS::ECR::Repository
+    Properties: 
+      RepositoryName: !Ref repoName
+      ImageTagMutability: IMMUTABLE
+      LifecyclePolicy: 
+        LifecyclePolicyText: |
+          {
+            "rules": [
+            {
+              "rulePriority": 1,
+              "description": "Keep 5",
+              "selection": {
+                  "tagStatus": "tagged",
+                  "tagPrefixList": ["CHOOSE_YOUR_PREFIX"],
+                  "countType": "imageCountMoreThan",
+                  "countNumber": 5
+              },
+              "action": {
+                  "type": "expire"
+              }
+            },
+            {
+              "rulePriority": 2,
+              "description": "Expire images older than 1 days",
+              "selection": {
+                  "tagStatus": "any",
+                  "countType": "sinceImagePushed",
+                  "countNumber": 15,
+                  "countUnit": "days"
+              },
+              "action": {
+                  "type": "expire"
+              }
+            }]
+          }
